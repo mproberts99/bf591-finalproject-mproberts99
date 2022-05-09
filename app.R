@@ -17,6 +17,8 @@ options(shiny.maxRequestSize=30*1024^2)
 
 ui <- fluidPage(
   titlePanel("BF591 Final Project"),
+  p("Exploring RNA-Seq data from post-mortem brain tissue of patients who died from Huntington's Disease."),
+  p("Reference: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE64810"),
   tabsetPanel(
     #---------------------------------------------------------Samples Tab------------------------------------------------------------
     tabPanel("Samples", 
@@ -225,7 +227,9 @@ server <- function(input, output, session) {
     column <- colnames(dataf)
     column_type <- as.vector(sapply(dataf, typeof))
     df <- data.frame(column=column, column_type=column_type)
-    num_sum <- data.frame(mean = sapply(samples, mean), sds = sapply(samples, sd)) %>% mutate(summary = str_glue('{mean}(+/-{sds})'))
+    num_sum <- data.frame(mean = sapply(samples, mean), 
+                          sds = sapply(samples, sd)) %>% 
+      mutate(summary = str_glue('{mean}(+/-{sds})'))
     df$numeric_summary <- num_sum$summary
     df$numeric_summary <- gsub('NA(+/-NA)', '', df$numeric_summary, fixed = TRUE)
     df_nonnum <- data.frame(sum = sapply(dataf, function(x) str_glue("Distinct Values: {length(unique(x))}")))
@@ -314,7 +318,8 @@ server <- function(input, output, session) {
     stats_df$rank <- rank(stats_df$variance)
     stats_df$nonzero <- rowSums(dataf[,-1]!=0)
     stats_df$median <- apply(dataf[,-1], 1, median)
-    filtered_status <- stats_df %>% mutate(filter_status=ifelse(rank >= nrow(stats_df)*(slider_var/100) & nonzero >= slider_num, 'pass filter', 'filtered out'))
+    filtered_status <- stats_df %>% 
+      mutate(filter_status=ifelse(rank >= nrow(stats_df)*(slider_var/100) & nonzero >= slider_num, 'pass filter', 'filtered out'))
     p1 <- ggplot(filtered_status, aes(x=variance, y=median, color=filter_status)) +
       geom_point() +
       scale_y_log10() +
