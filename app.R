@@ -21,13 +21,14 @@ ui <- fluidPage(
   p("Reference: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE64810"),
   tabsetPanel(
     #---------------------------------------------------------Samples Tab------------------------------------------------------------
-    tabPanel("Samples", 
+    tabPanel("Samples",
+             p("Use this tab to explore the metadata of the samples in the study."),
              sidebarLayout(
                sidebarPanel(
                  fileInput("samples_csvfile",
-                           label = "", 
+                           label = "Upload Sample Metadata:", 
                            accept = ".csv", 
-                           placeholder = ""),
+                           placeholder = "metadata.csv"),
                  submitButton("Submit", 
                               width = '100%')
                ),
@@ -45,12 +46,13 @@ ui <- fluidPage(
     ),
     #---------------------------------------------------------Counts Tab------------------------------------------------------------
     tabPanel("Counts",
+             p("Use this tab to explore the counts data of the experiment and filter genes based on selected criteria."),
              sidebarLayout(
                sidebarPanel(
                  fileInput("counts_csvfile",
-                           label = "", 
+                           label = "Upload counts matrix file.", 
                            accept = ".csv", 
-                           placeholder = ""),
+                           placeholder = "counts.csv"),
                  sliderInput("counts_slider_var",
                              min = 0, 
                              max = 100,
@@ -98,6 +100,7 @@ ui <- fluidPage(
     
     #---------------------------------------------------------DE Tab------------------------------------------------------------
     tabPanel("DE",
+             p("Use this tab to visualize differential expression results of the experiment."),
              sidebarLayout(
                sidebarPanel(
                  fileInput("DE_csvfile",
@@ -119,7 +122,7 @@ ui <- fluidPage(
                              label = "Highlight point color", 
                              value = "#21EDCE"),
                  sliderInput(inputId = "DE_slider", 
-                             min = -300, 
+                             min = -100, 
                              max = 0,
                              label = "Select the magnitude of the p adjusted coloring:", 
                              value = -5, 
@@ -139,12 +142,13 @@ ui <- fluidPage(
     ),
     #---------------------------------------------------------GSEA Tab------------------------------------------------------------
     tabPanel("GSEA",
+             p("Use this tab to visualize gene set enrichment analysis results of the data."),
              sidebarLayout(
                sidebarPanel(
                  fileInput("GSEA_csvfile",
-                           label = "", 
+                           label = "Upload GSEA results table.", 
                            accept = ".csv", 
-                           placeholder = "")
+                           placeholder = "gsea_results.csv")
                ),
                mainPanel(
                  tabsetPanel(
@@ -169,7 +173,7 @@ ui <- fluidPage(
                               sidebarPanel(
                                 sliderInput("GSEA_table_pvalue",
                                             min = -20, 
-                                            max = -1,
+                                            max = 0,
                                             label = "Select adjusted p-value to filter by:", 
                                             value = -1, 
                                             step = 1),
@@ -194,7 +198,7 @@ ui <- fluidPage(
                               sidebarPanel(
                                 sliderInput("GSEA_scatter_pvalue",
                                             min = -20, 
-                                            max = -1,
+                                            max = 0,
                                             label = "Select adjusted p-value to filter by:", 
                                             value = -1, 
                                             step = 1),
@@ -227,8 +231,8 @@ server <- function(input, output, session) {
     column <- colnames(dataf)
     column_type <- as.vector(sapply(dataf, typeof))
     df <- data.frame(column=column, column_type=column_type)
-    num_sum <- data.frame(mean = sapply(samples, mean), 
-                          sds = sapply(samples, sd)) %>% 
+    num_sum <- data.frame(mean = sapply(dataf, mean), 
+                          sds = sapply(dataf, sd)) %>% 
       mutate(summary = str_glue('{mean}(+/-{sds})'))
     df$numeric_summary <- num_sum$summary
     df$numeric_summary <- gsub('NA(+/-NA)', '', df$numeric_summary, fixed = TRUE)
